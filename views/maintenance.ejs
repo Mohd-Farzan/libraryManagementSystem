@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maintenance - Library Management System</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Admin Dashboard</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">Admin Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/maintenance">Maintenance</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/transactions">Transactions</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Maintenance Section -->
+  <div class="container py-5">
+    <h2 class="text-center mb-4">Manage Books and Users</h2>
+
+    <!-- Add New Book -->
+    <div class="mb-4">
+      <h3>Add New Book</h3>
+      <form id="addBookForm">
+        <div class="mb-3">
+          <label for="bookTitle" class="form-label">Title</label>
+          <input type="text" class="form-control" id="bookTitle" required>
+        </div>
+        <div class="mb-3">
+          <label for="bookCodeFrom" class="form-label">Code From</label>
+          <input type="text" class="form-control" id="bookCodeFrom" required>
+        </div>
+        <div class="mb-3">
+          <label for="bookCodeTo" class="form-label">Code To</label>
+          <input type="text" class="form-control" id="bookCodeTo" required>
+        </div>
+        <div class="mb-3">
+          <label for="bookCategory" class="form-label">Category</label>
+          <input type="text" class="form-control" id="bookCategory" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Book</button>
+      </form>
+    </div>
+
+    <!-- Book List Table -->
+    <h3 class="text-center">Manage Books</h3>
+    <table class="table table-bordered">
+      <thead class="table-dark">
+        <tr>
+          <th>Title</th>
+          <th>Code From</th>
+          <th>Code To</th>
+          <th>Category</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="bookList">
+        <!-- Book list will be populated here -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white py-4">
+    <div class="container text-center">
+      <p>&copy; 2024 Library Management System. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- JavaScript to handle book management -->
+  <script>
+    // Handle Add Book
+    document.getElementById("addBookForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const bookTitle = document.getElementById("bookTitle").value;
+      const bookCodeFrom = document.getElementById("bookCodeFrom").value;
+      const bookCodeTo = document.getElementById("bookCodeTo").value;
+      const bookCategory = document.getElementById("bookCategory").value;
+
+      fetch('/api/books', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title: bookTitle, codeFrom: bookCodeFrom, codeTo: bookCodeTo, category: bookCategory }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert('Book added successfully');
+        loadBooks();
+      })
+      .catch(error => {
+        console.error('Error adding book:', error);
+      });
+    });
+
+    // Load Books
+    function loadBooks() {
+      fetch('/api/books')
+        .then(response => response.json())
+        .then(books => {
+          const bookList = document.getElementById("bookList");
+          bookList.innerHTML = ''; // Clear existing books
+          books.forEach(book => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${book.title}</td>
+              <td>${book.codeFrom}</td>
+              <td>${book.codeTo}</td>
+              <td>${book.category}</td>
+              <td>
+                <button class="btn btn-warning btn-sm" onclick="editBook('${book._id}')">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteBook('${book._id}')">Delete</button>
+              </td>
+            `;
+            bookList.appendChild(tr);
+          });
+        })
+        .catch(error => {
+          console.error('Error loading books:', error);
+        });
+    }
+
+    // Delete Book
+    function deleteBook(bookId) {
+      fetch(`/api/books/${bookId}`, {
+        method: 'DELETE',
+      })
+      .then(response => response.json())
+      .then(() => {
+        alert('Book deleted successfully');
+        loadBooks();
+      })
+      .catch(error => {
+        console.error('Error deleting book:', error);
+      });
+    }
+
+    // Edit Book (for simplicity, just logging here)
+    function editBook(bookId) {
+      console.log('Edit Book:', bookId);
+      // Implement your edit logic here
+    }
+
+    // Initial load
+    loadBooks();
+  </script>
+</body>
+</html>
